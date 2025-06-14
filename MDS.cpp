@@ -4,6 +4,7 @@
 #include<set>
 #include<stack>
 #include<map>
+#include<random>
 #include<queue>
 #include<cstdint>
 #include <random>
@@ -111,7 +112,7 @@ public:
     int x_minus;
     int x;
     vector<int>age;
-    // ????????????????????????????????????
+    // ﾹ￾ￏﾣￏ￠ﾹ￘ﾳ￉ￔﾱ
     vector<uint64_t> base1;
     vector<uint64_t> base2;
     uint64_t hash1;
@@ -119,21 +120,12 @@ public:
     unordered_set<pair<uint64_t, uint64_t>, HashPair> tabu_set;
     deque<pair<uint64_t, uint64_t>> tabu_list;
     int tabu_tenure = 7;
-    DiscretizeVector best_solution;
+
     vector<int> best_result;
     void output_result() {
-        if (best_result.size() < best_solution.element.size())
-        {
-            cout << best_result.size() << endl;
-            for (auto i : best_result)
-                cout << i + 1 << endl;
-        }
-        else
-        {
-            cout << best_solution.element.size() << endl;
-            for (auto i : best_solution.element)
-                cout << i + 1 << endl;
-        }
+        cout << best_result.size() << endl;
+        for (auto i : best_result)
+            cout << i + 1 << endl;
     }
     void ReductionRule(int i) {
         if (degrees.L[i] <= 1 && X_minus[i])
@@ -210,7 +202,6 @@ public:
     int select_insert(int& ins);
     void insert_vertex(int num);
     int  select_insert2(int& ins);
-    int  select_insert3(int& ins);
     void make_rand()
     {
         for (int i = ini_num; i < min(ini_num + vary_length, int(X2.element.size())); i++)
@@ -376,31 +367,6 @@ public:
             }
         }
     }
-    void record()
-    {
-        best_solution.clear();
-        for (auto i : best_result)
-        {
-            best_solution.push(i);
-        }
-    }
-    void restore()
-    {
-        for (int i = X2.element.size() - 1; i >= ini_num; i--)
-        {
-            if (best_solution.All[X2.element[i]] == -1)
-            {
-                remove_vertex(X2.element[i], age[X2.element[i]]);
-            }
-        }
-        for (int i = ini_num; i < best_solution.element.size(); i++)
-        {
-            if (X2.All[best_solution.element[i]] == -1)
-            {
-                insert_vertex(best_solution.element[i]);
-            }
-        }
-    }
     friend istream& operator >>(istream& istr, MDSP& g)
     {
         int V, value, E, value2;
@@ -421,7 +387,7 @@ public:
         g.age.assign(V, 0);
         g.first_model_remove = DiscretizeVector(V);
         g.redundant_vertex = DiscretizeVector(V);
-        g.best_solution = DiscretizeVector(V);
+
         g.base1.resize(V);
         g.base2.resize(V);
         mt19937_64 rng(seed);
@@ -432,7 +398,7 @@ public:
         g.hash1 = 0;
         g.hash2 = 0;
 
-
+        
         for (int i = 0; i < E; i++)
         {
             istr >> value >> value2;
@@ -513,7 +479,6 @@ void MDSP::ini_greed()
         if (X[i])
         {
             X2.push(i);
-            best_solution.push(i);
         }
     }
     int sc_max = -1;
@@ -543,6 +508,7 @@ void MDSP::ini_greed()
         if (i != degrees.L.size())
         {
             remove_to_X(i);
+
         }
         else
         {
@@ -636,17 +602,17 @@ void MDSP::remove_vertex(int i, long long iter)
     else
         f5(i);
     age[i] = iter;
-
+  
 
 }
 int MDSP::select_insert(int& ins) {
     first_model_remove.clear();
-    int best_candidate = -1;          // ??????��?????�W??��?????
+    int best_candidate = -1;          // 非禁忌最佳候选
     int best_score = -1;
-    int best_age = 999999999;
-    int best_tabu_candidate = -1;     // ???��?????�W??��?????
+    int best_age = INT_MAX;
+    int best_tabu_candidate = -1;     // 禁忌最佳候选
     int best_tabu_score = -1;
-    int best_tabu_age = 999999999;
+    int best_tabu_age = INT_MAX;
 
     for (auto i : X_M.element) {
         for (auto j : HL[i]) {
@@ -655,7 +621,7 @@ int MDSP::select_insert(int& ins) {
             uint64_t new_hash2 = hash2 + base2[j];
             bool is_tabu = (tabu_set.find({ new_hash1, new_hash2 }) != tabu_set.end());
             if (is_tabu) {
-                // ???��??��???????????��??��???????????�W??��????????��?????
+                // 禁忌候选：记录分数最高且年龄最小的
                 if (score_now > best_tabu_score ||
                     (score_now == best_tabu_score && age[j] < best_tabu_age)) {
                     best_tabu_candidate = j;
@@ -664,7 +630,7 @@ int MDSP::select_insert(int& ins) {
                 }
             }
             else {
-                // ??????��??��???????????��??��???????????�W??��????????��?????
+                // 非禁忌候选：记录分数最高且年龄最小的
                 if (score_now > best_score ||
                     (score_now == best_score && age[j] < best_age)) {
                     best_candidate = j;
@@ -673,7 +639,7 @@ int MDSP::select_insert(int& ins) {
                 }
             }
         }
-        // ��?????��??��????????i????????????
+        // 处理当前顶点i（自身）
         int score_now_i = degrees.L[i] + (X_minus[i] == 1 ? 1 : 0);
         uint64_t new_hash1_i = hash1 + base1[i];
         uint64_t new_hash2_i = hash2 + base2[i];
@@ -696,7 +662,7 @@ int MDSP::select_insert(int& ins) {
         }
     }
 
-    // �W??��??????????????��??��??????????????��???????????��??��?????
+    // 优先选择非禁忌候选，若无则选择禁忌候选
     if (best_candidate != -1) {
         ins = best_candidate;
         return best_score;
@@ -706,7 +672,7 @@ int MDSP::select_insert(int& ins) {
         return best_tabu_score;
     }
     else {
-        // �W??��?????????????????�W??�W??�W?????��?????
+        // 保底选择（理论上不会触发）
         if (X_M.element.empty()) {
             ins = -1;
             return -1;
@@ -729,7 +695,7 @@ int MDSP::select_insert2(int& ins) {
         //uint64_t new_hash1 = hash1 + base1[i];
         //uint64_t new_hash2 = hash2 + base2[i];
         //if (tabu_set.find({ new_hash1, new_hash2 }) != tabu_set.end()) {
-        //    continue; // ??????????????????????????????
+        //    continue; // ￌ￸ﾹ�ﾽ￻ﾼ￉ﾽ￢
         //}
         if (score_now > ins_score)
         {
@@ -746,45 +712,6 @@ int MDSP::select_insert2(int& ins) {
                 rd_ins = 2;
             }
             else if (age[i] == age[ins] && !gen() % (rd_ins++))
-            {
-                ins = i;
-                ins_score = score_now;
-            }
-        }
-    }
-    return ins_score;
-}
-int MDSP::select_insert3(int& ins) {
-    first_model_remove.clear();
-    int ins_score = -1;
-    for (auto i : X_M.element)
-    {
-        for (auto j : HL[i])
-        {
-            int score_now = degrees.L[j] + (X_minus[j] == 1 ? 1 : 0);
-            if (score_now > ins_score)
-            {
-                ins = j;
-                ins_score = score_now;
-            }
-            else if (score_now == ins_score)
-            {
-                if (age[j] < age[ins])
-                {
-                    ins = j;
-                    ins_score = score_now;
-                }
-            }
-        }
-        int score_now = degrees.L[i] + (X_minus[i] == 1 ? 1 : 0);
-        if (score_now > ins_score)
-        {
-            ins = i;
-            ins_score = score_now;
-        }
-        else if (score_now == ins_score)
-        {
-            if (age[i] < age[ins])
             {
                 ins = i;
                 ins_score = score_now;
@@ -818,7 +745,7 @@ int MDSP::select_remove(int& a, int& b, long long& iter) {
                     uint64_t new_hash1 = hash1 - base1[i];
                     uint64_t new_hash2 = hash2 - base2[i];
                     if (tabu_set.find({ new_hash1, new_hash2 }) != tabu_set.end()) {
-                        continue; // ??????????????????????????????
+                        continue; // ￌ￸ﾹ�ﾽ￻ﾼ￉ﾽ￢
                     }
 
                     if (score_rem < rem_score)
@@ -858,7 +785,7 @@ int MDSP::select_remove(int& a, int& b, long long& iter) {
                 uint64_t new_hash1 = hash1 - base1[i];
                 uint64_t new_hash2 = hash2 - base2[i];
                 if (tabu_set.find({ new_hash1, new_hash2 }) != tabu_set.end()) {
-                    continue; // ??????????????????????????????
+                    continue; // ￌ￸ﾹ�ﾽ￻ﾼ￉ﾽ￢
                 }
 
                 if (score_rem < rem_score)
@@ -929,24 +856,18 @@ void MDSP::DemDS()
     best_result = X2.element;
     long long iter = 0;
     curr_time = clock();
+    bool record = X2.element.size() < 50000;
     int flag = 1;
-    int iter2 = 1;
-    int flag3 = 0;
+    int iter2 = 0;
+    int flag3 = 1;
     int a, b = -1, c, d;
     tabu_tenure = 10/*sqrt(X2.element.size()) / 5*/;
-
     for (int i = 0; i < X2.element.size(); i++)
     {
         if (degrees.L3[X2.element[i]] == 0 && degrees.L2[X2.element[i]] != 0)
-        {
             remove_vertex(X2.element[i], iter);
-
-            hash1 -= base1[X2.element[i]];
-            hash2 -= base2[X2.element[i]];
-        }
     }
-    record();
-    clock_t record_time = clock();
+
     while (iter < nbIter) {
         if (X2.element.size() == ini_num) {
             output_result();
@@ -965,40 +886,11 @@ void MDSP::DemDS()
 
                 best_result = X2.element;
                 best_current_X_M = X2.element.size();
-                record_time = clock();
             }
-        }
-        if ((curr_time - begin_time) / CLOCKS_PER_SEC < 260)
             if (flag3)
-            {
-                if (best_result.size() <= best_solution.element.size())
-                {
-                    record();
-                }
-                else
-                    restore();
-                int k = X2.element.size();
-                for (int i = 0; i < (k - ini_num) * 0.2; i++)
-                {
-                    int pos = gen() % (X2.element.size() - ini_num) + ini_num;
-                    remove_vertex(X2.element[pos], age[X2.element[pos]]);
-                    hash1 -= base1[X2.element[pos]];
-                    hash2 -= base2[X2.element[pos]];
-                }
-                while (X_M.element.size() != 0)
-                {
-                    select_insert3(b);
-                    insert_vertex(b);
-                    age[b] = iter;
-                    b = -1;
-                    /*if (redundant_vertex.element.size() != 0)
-                        improve(iter);*/
-                }
-                best_result = X2.element;
-                iter2++;
-                flag3 = 0;
-                record_time = clock();
-            }
+                iter2 = 0;
+        }
+
         best_current_X_M = min(best_current_X_M, int(X_M.element.size()));
         select_remove(a, b, iter);
         remove_vertex(a, iter);
@@ -1014,13 +906,12 @@ void MDSP::DemDS()
                 tabu_set.erase(old_hash);
             }
         }
-
         make_rand();
         if (X_M.element.size() != 0 && X2.element.size() < best_result.size() - 1)
         {
-            if (X_M.element.size() > 20 && gen() % 100 > 1)
+            if (X_M.element.size() > 20)
             {
-                select_insert3(b);
+                select_insert(b);
                 insert_vertex(b);
                 age[b] = iter;
                 b = -1;
@@ -1038,7 +929,7 @@ void MDSP::DemDS()
             if (X2.element.size() < best_result.size() - 1 || redundant_vertex.element.size() != 0/*||(X2.element.size() == best_result.size() - 1&&redundant_vertex!=0)*/)
             {
                 int insert_v;
-                if (select_insert3(insert_v) == X_M.element.size())
+                if (select_insert(insert_v) == X_M.element.size())
                 {
                     insert_vertex(insert_v);
                     age[insert_v] = iter;
@@ -1049,13 +940,13 @@ void MDSP::DemDS()
 
             }
         }
-
+       
         if (redundant_vertex.element.size() > 1 && X_M.element.size() < 20)
             improve(iter);
         while (X_M.element.size() != 0 && X2.element.size() < best_result.size() - 1)
         {
             {
-                select_insert3(b);
+                select_insert(b);
                 insert_vertex(b);
                 age[b] = iter;
                 b = -1;
@@ -1063,23 +954,19 @@ void MDSP::DemDS()
                     improve(iter);
             }
         }
-
         if (iter % 10 == 0)
         {
-            curr_time = clock();
-            /* if ((curr_time - log2_time) / CLOCKS_PER_SEC > 1)
-             {
-                 iter2++;
-                 cout << "#" << iter << "  #" << X_M.element.size() << "  " << best_result.size()<<"  #"<<redundant_vertex.element.size() << "   " << X2.element.size() << " #  "<<best_solution.element.size()<<endl;
-                 log2_time = clock();
-             }*/
-            if ((curr_time - record_time) / 5000 > 5)
-            {
-                flag3 = 1;
-            }
+               /*curr_time = clock();
+               if ((curr_time - log2_time) / CLOCKS_PER_SEC > 1)
+               {
+                   cout << "#" << iter << "  #" << X_M.element.size() << "  " << best_result.size()<<"  #"<<redundant_vertex.element.size() << "   " << X2.element.size() << endl;
+                   log2_time = clock();
+               }*/
+
             if (signal_received.load()) break;
         }
         iter++;
+        iter2++;
     }
 
 
@@ -1098,8 +985,8 @@ int main()
     gen.seed(seed);
 
     MDSP a;
-    /*    ifstream infile("heuristic_002.gr");
-        infile >> a;*/
+   /* ifstream infile("heuristic_080.gr");
+    infile >> a;*/
     cin >> a;
     a.DemDS();
 }
@@ -1108,8 +995,5 @@ auto MDSP::improve(long long iter)->void {
     {
         int i = redundant_vertex.element[redundant_vertex.element.size() - 1];
         remove_vertex(i, iter);
-
-        hash1 -= base1[i];
-        hash2 -= base2[i];
     }
 }
