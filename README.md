@@ -21,6 +21,3 @@ The solver reads input from standard input (stdin) and writes the output to stan
 For any questions or feedback, please contact:
 778845121@qq.com
 
-## License
-
-This project is licensed under the [MIT License](LICENSE). 
