@@ -6,7 +6,7 @@ It fully supports the input and output formats as defined in the challenge for t
 ### Build
 
 ```shell
-g++ -o app -O2 -I . *.cpp
+g++ -o solver -O3 -I . *.cpp
 ```
 
 ### Run
