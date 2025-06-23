@@ -361,10 +361,6 @@ public:
             {
                 f1_1(i);
             }
-            if (degrees.L2[i] == 0 && X[i])
-            {
-                X2.erase(i);
-            }
         }
     }
     friend istream& operator >>(istream& istr, MDSP& g)
@@ -398,7 +394,7 @@ public:
         g.hash1 = 0;
         g.hash2 = 0;
 
-        
+
         for (int i = 0; i < E; i++)
         {
             istr >> value >> value2;
@@ -602,7 +598,7 @@ void MDSP::remove_vertex(int i, long long iter)
     else
         f5(i);
     age[i] = iter;
-  
+
 
 }
 int MDSP::select_insert(int& ins) {
@@ -813,7 +809,7 @@ int MDSP::select_remove(int& a, int& b, long long& iter) {
         num = 15;
     num = max(3, num);
     vary_length = num;
-    for (int j = ini_num; j < min(ini_num + num, int(X2.element.size() - 1)); j++)
+    for (int j = ini_num; j <= min(ini_num + num, int(X2.element.size() - 1)); j++)
     {
         int i = X2.element[j];
 
@@ -940,7 +936,7 @@ void MDSP::DemDS()
 
             }
         }
-       
+
         if (redundant_vertex.element.size() > 1 && X_M.element.size() < 20)
             improve(iter);
         while (X_M.element.size() != 0 && X2.element.size() < best_result.size() - 1)
@@ -956,12 +952,12 @@ void MDSP::DemDS()
         }
         if (iter % 10 == 0)
         {
-               /*curr_time = clock();
-               if ((curr_time - log2_time) / CLOCKS_PER_SEC > 1)
-               {
-                   cout << "#" << iter << "  #" << X_M.element.size() << "  " << best_result.size()<<"  #"<<redundant_vertex.element.size() << "   " << X2.element.size() << endl;
-                   log2_time = clock();
-               }*/
+           /* curr_time = clock();
+            if ((curr_time - log2_time) / CLOCKS_PER_SEC > 1)
+            {
+                cout << "#" << iter << "  #" << X_M.element.size() << "  " << best_result.size()<<"  #"<<redundant_vertex.element.size() << "   " << X2.element.size() << endl;
+                log2_time = clock();
+            }*/
 
             if (signal_received.load()) break;
         }
@@ -985,8 +981,8 @@ int main()
     gen.seed(seed);
 
     MDSP a;
-   /* ifstream infile("heuristic_080.gr");
-    infile >> a;*/
+     /*ifstream infile("uniform_random_intersection_graph_100_50_0.9.gr");
+     infile >> a;*/
     cin >> a;
     a.DemDS();
 }
