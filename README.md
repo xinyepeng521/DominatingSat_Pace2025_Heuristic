@@ -15,6 +15,7 @@ The solver operates through the following steps:
      - Globally insert the highest-scoring vertex
    - **Feasibility Check**: When the current solution size is one less than the best feasible solution size or redundant vertices exist, insert the highest-scoring vertex if it yields a feasible solution.
 4. **Redundancy Handling**: When a feasible solution is found, redundant vertices (incrementally updated each iteration) are identified and removed.
+   
 5.**Cycle Escape**: A tabu mechanism using **solution hashing** is applied to escape cycles. Crucially, the hash of tabu solutions is incrementally updated **only for removed vertices**, not for inserted vertices.
 
 ## How to Build and Run
